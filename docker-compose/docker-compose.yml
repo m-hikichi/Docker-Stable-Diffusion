@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  dev:
+    build:
+      context: ../Dockerfile
+      dockerfile: Dockerfile
+    image: diffusers:0.23.1
+    container_name: stable-diffusion
+    volumes:
+      - ../src:/app/src
+      - ../models:/app/models
+      - ../output:/app/output
+    working_dir: /app
+    tty: true
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
