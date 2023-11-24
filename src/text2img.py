@@ -1,8 +1,8 @@
 from logging import getLogger, Formatter, StreamHandler, INFO
-from pathlib import Path
 from diffusers import StableDiffusionPipeline
 from modules.util import set_device, initialize_generator, deactivate_safety_checker
 from modules.scheduler import set_scheduler
+from modules.lora import set_lora
 
 
 formatter = Formatter("【%(levelname)s】%(message)s")
@@ -13,17 +13,11 @@ logger.addHandler(stream_handler)
 logger.setLevel(INFO)
 
 
-def text2img(base_model_filepath, prompt, negative_prompt=None, width=512, height=512, guidance_scale=7, num_inference_steps=30, scheduler=False, seed=None, safety_checker=True, lora_model_filepath=None):
+def text2img(base_model_filepath, prompt, negative_prompt=None, width=512, height=512, guidance_scale=7, num_inference_steps=30, scheduler=False, seed=None, safety_checker=True, lora_list=None):
     
     # load base model (https://huggingface.co/docs/diffusers/main/en/using-diffusers/using_safetensors)
     pipeline = StableDiffusionPipeline.from_single_file(base_model_filepath)
     logger.info(f"load base model : {base_model_filepath}")
-
-    # load lora model (https://huggingface.co/docs/diffusers/main/en/training/lora#dreambooth-inference)
-    if lora_model_filepath:
-        lora_model_filepath = Path(lora_model_filepath)
-        pipeline.load_lora_weights(lora_model_filepath.parent, weight_name=lora_model_filepath.name)
-        logger.info(f"load lora model : {lora_model_filepath}")
 
     # set scheduler
     pipeline = set_scheduler(pipeline, scheduler)
@@ -34,6 +28,11 @@ def text2img(base_model_filepath, prompt, negative_prompt=None, width=512, heigh
     # deactivate safety checker
     if not safety_checker:
         pipeline = deactivate_safety_checker(pipeline)
+
+    # set lora
+    if lora_list:
+        for lora in lora_list:
+            pipeline = set_lora(pipeline, lora)
 
     # set device
     device = set_device()
