@@ -1,13 +1,8 @@
-import random
-import torch
 from diffusers import StableDiffusionLatentUpscalePipeline
+from modules.util import set_device, initialize_generator
 
 # https://note.com/npaka/n/n75fcd514d57a
 def latent_upscaler(image, prompt, negative_prompt=None, guidance_scale=7, num_inference_steps=10, seed=None):
-    if torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
     
     # setup upscaler
     upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(
@@ -15,11 +10,10 @@ def latent_upscaler(image, prompt, negative_prompt=None, guidance_scale=7, num_i
     )
 
     # set seed value
-    if seed:
-        generator = torch.Generator(device).manual_seed(seed)
-    else:
-        generator = torch.Generator(device).manual_seed(random.randint(0, 2**32))
+    generator = initialize_generator(seed)
     
+    # set device
+    device = set_device()
     upscaler.to(device)
 
     upscaled_image = upscaler(
