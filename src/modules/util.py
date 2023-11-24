@@ -19,12 +19,13 @@ def set_device():
 
 
 def initialize_generator(seed):
-    device = set_device()
-    if seed:
-        generator = torch.Generator(device).manual_seed(seed)
-    else:
-        generator = torch.Generator(device).manual_seed(random.randint(0, 2**32))
+    if not seed:
+        seed = random.randint(0, 2**32)
 
+    device = set_device()
+    generator = torch.Generator(device).manual_seed(seed)
+        
+    logger.info(f"seed value : {seed}")
     return generator
 
 
