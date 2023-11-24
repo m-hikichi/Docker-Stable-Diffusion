@@ -1,2 +1,4 @@
 *.safetensors
 *.png
+
+__pycache__
